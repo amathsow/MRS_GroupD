@@ -6,7 +6,7 @@
 2. Marco Luna
 3. Amath Sow
 
-# Tast: 
+# Task: 
 In this Summer School task, we will focus on the cooperation of a group of two UAVs (Unmanned Aerial Vehicles) in a 3D environment with obstacles.
 The task is to plan collision-free trajectories of the UAVs so that cameras onboard the UAVs inspect a set of *N* unique inspection points.
 Both UAVs have a predefined starting position and a limit on maximal velocity and acceleration.
