@@ -79,7 +79,7 @@ The motion blur effect during imaging is neglected; thus, the UAVs are not requi
 1. We use k-means for clustering, we have tested with density based clustering OPTICS but it's very hyperparameters sensitive, so we need to do grid search or bayesian optimization.
 2. We implemente the heading interpolation between samples 
 3. We use A* for planning  with euclidean heuristic and add also the path straithtening with halveAndTest function
-4. We apply path smoothing and continuous trajectory sampling (no stops at waypoints) to speed up the flight with toppra.
+4. We apply path smoothing and continuous trajectory sampling (no stops at waypoints) to speed up the flight with toppra. We relax the parameters of TOPPRA algorithm (gridpt_max_err_threshold=1e-4) to find a feasible solution in an acceptable time and for this reason we are modifying the inputs to be more restrictive (toppra acelereration and velocity inputs were reduced 7.5% to manage the posible errors of relaxing.)
 5. We implemented delay_till_no_collisions_occur for collision avoidance
 6. Finally, we did some hyperparameters tuning
 
