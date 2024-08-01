@@ -50,8 +50,8 @@ class MrimPlanner:
         max_acc_x                      = rospy.get_param('~dynamic_constraints/max_acceleration/x', 1.0)
         max_acc_y                      = rospy.get_param('~dynamic_constraints/max_acceleration/y', 1.0)
         max_acc_z                      = rospy.get_param('~dynamic_constraints/max_acceleration/z', 1.0)
-        self._max_velocity             = (max_vel_x, max_vel_y, max_vel_z)
-        self._max_acceleration         = (max_acc_x, max_acc_y, max_acc_z)
+        self._max_velocity             = (max_vel_x-0.075*max_vel_x, max_vel_y-0.075*max_vel_y, max_vel_z-0.075*max_vel_z)
+        self._max_acceleration         = (max_acc_x-0.075*max_acc_x, max_acc_y-0.075*max_acc_y, max_acc_z-0.075*max_acc_z)
         self._max_heading_rate         = rospy.get_param('~dynamic_constraints/max_heading_rate', 1.0)
         self._max_heading_acceleration = rospy.get_param('~dynamic_constraints/max_heading_rate_acceleration', 1.0)
 

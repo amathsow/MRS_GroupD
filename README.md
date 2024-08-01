@@ -1,5 +1,12 @@
-# MRS Summer School 2024: multi-robot inspection and monitoring
+# GROUP BESTeam : MRS Summer School 2024: multi-robot inspection and monitoring
 
+# Team members:
+
+1. Boris KIEMA
+2. Marco Luna
+3. Amath Sow
+
+# Tast: 
 In this Summer School task, we will focus on the cooperation of a group of two UAVs (Unmanned Aerial Vehicles) in a 3D environment with obstacles.
 The task is to plan collision-free trajectories of the UAVs so that cameras onboard the UAVs inspect a set of *N* unique inspection points.
 Both UAVs have a predefined starting position and a limit on maximal velocity and acceleration.
@@ -68,47 +75,13 @@ The trajectories are required to begin and end at predefined starting locations.
 The mission starts when the trajectory following is started and ends once the UAVs stop at their starting locations.
 The motion blur effect during imaging is neglected; thus, the UAVs are not required to stop at particular VPs.
 
-## Task assignment
-
-There is a low-performance solution available at your hands.
-This solution consists of:
-
-* non-controlled heading of the UAVs,
-* random assignment of common IPs 🟣 to each UAV,
-* computation of TSP (Traveling Salesman Problem) tours using Euclidean distance estimates,
-* planning paths with the use of badly parametrized RRT planner,
-* generation of trajectories with required zero velocity at the end of each straight segment,
-* mutual UAV to UAV collision avoidance is disabled.
-
-The solution produced by this approach has very poor performance and does not score any points, yet provides large space for improvement.
-To improve the solution, you can follow the steps suggested below or find your way to improve the solution.
-Please go through the code and its inline comments to give you a better idea about individual tips.
-
-  **Tips for improving the solution:**
-
-  1. Interpolate the heading between the samples. This is the first thing to solve if you want to be efficient!
-  2. Test different methods available for estimating the distance between the VPs and for planning collision-free paths connecting the VPs [available planners: A*, RRT (default), RRT*].
-  3. Improve assignment of inspected points from 🟣 between the two UAVs (random by default).
-  4. Try different parameters of path planners (e.g., grid resolution or sampling distance) and evaluate their impact on the quality of your solution.
-  5. Increase performance of the chosen path planner (e.g., by path straightening or implementing informed RRT).
-  6. Consider flight time instead of path length when searching for the optimal sequence of locations in TSP.
-  7. Apply path smoothing and continuous trajectory sampling (no stops at waypoints) to speed up the flight. In the code, we have prepared the `toppra` library for computing path parametrizations [2]. Check out the [documentation](https://hungpham2511.github.io/toppra/) and try to utilize it.
-  8. Postprocess the time-parametrized trajectories to resolve UAV to UAV collisions. Start by implementing collision avoidance, e.g., by delaying trajectory start till there is no collision. Tip: try the methods available for you in the config file (see below).
-  9. Effectively redistribute IPs to avoid collisions and to achieve lower inspection time.
-
-  **Things to avoid:**
-
-* Very high minimum distance from obstacles could lead to path planners failing to find a path to some locations.
-* Smoothing and shortening the path in locations of inspections could lead to missing the inspection point.
-* Sampling on a grid with a small resolution could lead to errors emerging from discretization.
-
-Note that the overall task is very complex to be fully solved in a limited time during the summer school.
-You are not expected to solve every subproblem so do not feel bad if you don't.
-Instead, try to exploit and improve the parts of the solution you are most interested in or think to improve the solution the most.
-While designing your solution, do not forget to consider maximum computational time.
-We limit your computational time to speed up the flow of the competition.
-Although we prepared a skeleton solution as a baseline, **feel free to design your algorithms to improve the overall performance**.
-Good luck!
+## Our Solution
+1. We use k-means for clustering, we have tested with density based clustering OPTICS but it's very hyperparameters sensitive, so we need to do grid search or bayesian optimization.
+2. We implemente the heading interpolation between samples 
+3. We use A* for planning  with euclidean heuristic and add also the path straithtening with halveAndTest function
+4. We apply path smoothing and continuous trajectory sampling (no stops at waypoints) to speed up the flight with toppra.
+5. We implemented delay_till_no_collisions_occur for collision avoidance
+6. Finally, we did some hyperparameters tuning
 
 ### Constraints
 
@@ -131,33 +104,6 @@ Your solution to both the challenges has to conform to constraints summarized in
 
 \* The last point of the trajectory is expected to match the starting point with up to 1 m tolerance.
 
-## Where to code changes
-Change your code within directory `summer-school-2024/mrim_task/mrim_planner` (changes in other folders (`mrim_manager,mrim_resources, mrim_state_machine`) will not be applied during competition/evaluation) in files:
-
-* `scripts/`
-  * `planner.py`: Crossroad script where the path to your solution begins. Here you will find initial ideas and examples on how to load parameters.
-  * `trajectory.py`: Contains functionalities for basic work with trajectories. Here, you can **interpolate heading** between the path waypoints and experiment with smoothing the paths, sampling the trajectories, computing collisions between points/paths/trajectories, or postprocessing trajectories to prevent collisions.
-  * `solvers/`
-    * `tsp_solvers.py`: This is where VPs assignment for TSP, path planning, and solving TSP happens. Here you can play with an efficient assignment of VPs to UAVs or study the effect of path planners on TSP solution performance.
-    * `utils.py`: Default source of various utility functions. Feel free to add your own.
-  * `path_planners/grid_based`
-    * `astar.py`: Implementation of A* path planner. Here you can finish the planner using proper heuristic function, and add path straightening functionality.
-  * `path_planners/sampling_based`
-    * `rrt.py`: Implementation of RRT path planner. Here you can upgrade the planner to RRT*, implement a better sampling method, and add path straightening functionality.
-  * `config/`
-    * `virtual.yaml` and `real_world.yaml`: Config files (for two challenges described below) containing various parameters/switches for the task. If you need other parameters, add them here, load them in `scripts/planner.py` and use them in the code accordingly.
-
-In the files, look for keywords **`STUDENTS TODO`**, located in areas where you probably want to write/use some code.
-By default, you should not be required to make changes to other than the above-specified files.
-
-**Where else to look:**
-
-Throughout the code, we use some custom classes as data types.
-Check `mrim_planner/scripts/data_types.py` to see what the classes do.
-
-Apart from the configs in `mrim_planner/config`, default configs for the mission are loaded from `mrim_manager/config` for each run type.
-Take a look here to see the trajectories' dynamic constraints or safety limits.
-`mrim_planner/config` **should not be changed!**
 
 ## Run your code
 
@@ -228,9 +174,6 @@ The important tabs are listed below:
 | state_machine  | this node queries the planners for trajectories and handles the experiment     |
 | start_planning | here, a command is prepared in the shell's history to start the planning again |
 | control        | The MRS UAV System control pipeline                                            |
-
-Please, **check the outputs of the programs for errors first before emailing and asking the MRS crew for help**.
-Most often, the reason for your problem will be explained in some error message in one of the windows.
 
 **3) Online: prepare for real-world experiments**
 

@@ -7,7 +7,7 @@ import numpy as np
 
 from random import randint
 
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, OPTICS
 from scipy.spatial.kdtree import KDTree
 
 from utils import *
@@ -269,14 +269,20 @@ class TSPSolver3D():
             # Prepare positions of the viewpoints in the world
             positions = np.array([vp.pose.point.asList() for vp in viewpoints])
 
-            raise NotImplementedError('[STUDENTS TODO] KMeans clustering of viewpoints not implemented. You have to finish it on your own')
+            #raise NotImplementedError('[STUDENTS TODO] KMeans clustering of viewpoints not implemented. You have to finish it on your own')
             # Tips:
             #  - utilize sklearn.cluster.KMeans implementation (https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)
             #  - after finding the labels, you may want to swap the classes (e.g., by looking at the distance of the UAVs from the cluster centers)
             #  - Find the start poses of the UAVs in problem.start_poses[r].position.{x,y,z}
 
             # TODO: fill 1D list 'labels' of size len(viewpoints) with indices of the robots
-            labels = [randint(0, k - 1) for vp in viewpoints]
+            kmeans = KMeans(n_clusters=2, random_state=0)
+            labels = kmeans.fit_predict(positions)
+
+            #optics = OPTICS(min_samples=2, xi=0.1, min_cluster_size=0.01)
+            #optics.fit(positions)
+            #labels = optics.labels_
+            #labels = [randint(0, k - 1) for vp in viewpoints]
 
         ## | -------------------- Random clustering ------------------- |
         else:

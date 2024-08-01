@@ -146,7 +146,6 @@ class TrajectoryUtils():
     ## | ------------- Functions: trajectory (re)sampling ------------- |
 
     # # #{ interpolateHeading()
-
     def interpolateHeading(self, waypoints):
         '''
         Interpolates linearly the UAV heading between waypoints using clothoids.
@@ -214,6 +213,7 @@ class TrajectoryUtils():
         wps_interp.append(waypoints[-1])
 
         return wps_interp
+
     # # #}
 
     # #{ sampleStraightSegmentWithStops()
@@ -240,7 +240,6 @@ class TrajectoryUtils():
         # acc = 0 # no jeck jet
         dist_total = distEuclidean(start, stop)
         #print("dist_total", dist_total)
-
 
         # [STUDENTS TODO] Rework the method to per-axis computation if you want to exploit the allowed dynamics in all axes
         # Set minimal velocity/acceleration to the axis limit with minimal constraint
@@ -448,13 +447,6 @@ class TrajectoryUtils():
             toppra_trajectory = self.getParametrizedTrajectory(traj_hdg_interp, velocity_limits, acceleration_limits)
 
             sampling_step = trajectory.dT
-            
-            # Define the sampling points
-            num_samples = int(toppra_trajectory.duration / sampling_step) + 1
-            sampling_times = np.linspace(0, toppra_trajectory.duration, num_samples)
-
-            # Sample the trajectory
-            samples = toppra_trajectory.eval(sampling_times)
 
             # STUDENTS TODO: Sample the path parametrization 'toppra_trajectory' (instance of TOPPRA library).
             #raise NotImplementedError('[STUDENTS TODO] Trajectory sampling not finished. You have to implement it on your own.')
@@ -463,9 +455,15 @@ class TrajectoryUtils():
             #  - use 'toppra_trajectory' and the predefined sampling step 'sampling_step'
 
             #samples = [] # [STUDENTS TODO] Fill this variable with trajectory samples
+            # Generate time samples
+            path_length = toppra_trajectory.path_length
+            time_samples = np.arange(0, path_length, sampling_step)
+
+            # Sample the trajectory using TOPP-RA
+            samples = toppra_trajectory.eval(time_samples)
 
             # Convert to Trajectory class
-            poses      = [Pose(q[0], q[1], q[2], q[3]) for q in samples]
+            poses = [Pose(q[0], q[1], q[2], q[3]) for q in samples]
             trajectory = self.posesToTrajectory(poses)
 
         return trajectory
@@ -582,7 +580,7 @@ class TrajectoryUtils():
         path = ta.SplineInterpolator(normalized_distances, wp_lists)
         pc_vel     = constraint.JointVelocityConstraint(v_lims)
         pc_acc     = constraint.JointAccelerationConstraint(a_lims)
-        instance   = algo.TOPPRA([pc_vel, pc_acc], path, parametrizer="ParametrizeConstAccel", gridpt_max_err_threshold=1e-4)
+        instance   = algo.TOPPRA([pc_vel, pc_acc], path, parametrizer="ParametrizeConstAccel", gridpt_max_err_threshold=1e-7)
         trajectory = instance.compute_trajectory()
 
         return trajectory
@@ -655,6 +653,8 @@ class TrajectoryUtils():
         # # #}
 
         return trajectories, delayed_robots, delays
+    # # #}
+    
     # # #}
 
     ## | ---------------- Functions: path smoothing --------------- |
